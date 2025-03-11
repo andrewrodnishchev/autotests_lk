@@ -5,8 +5,9 @@ import allure
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from group_management_page import GroupManagementPage
-from test_login_page import LoginPage
+
+from autotests.pages.group_management_page import GroupManagementPage
+from autotests.pages.test_login_page import LoginPage
 
 @allure.feature('Group Management')
 @allure.story('Create Group')
