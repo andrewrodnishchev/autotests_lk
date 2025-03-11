@@ -1,61 +1,56 @@
-# test_group_management.py
+import time
 
 import pytest
-import allure
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
-from autotests.pages.group_management_page import GroupManagementPage
-from autotests.pages.test_login_page import LoginPage
+from autotests.pages.group_management_page import MyAssistantPage
+from autotests.tests.test_login_page import LoginPage
 
-@allure.feature('Group Management')
-@allure.story('Create Group')
-@allure.step('Login to the application')
-def test_create_group(driver):
-    login_page = LoginPage(driver)
-    login_page.login('test@safib.ru', '1')
+class TestGroupManagement:
+    @pytest.fixture
+    def setup(self, driver):
+        self.driver = driver
+        self.login_page = LoginPage(self.driver)
+        self.my_assistant_page = MyAssistantPage(self.driver)
 
-    # Переход к управлению группами
-    group_management_page = GroupManagementPage(driver)
-    group_management_page.navigate_to_organization("Тест Андрей")  # Замените на имя вашей организации
-    group_management_page.navigate_to_devices()
+    def test_add_and_delete_group(self, setup):
+    # Авторизация
+        self.login_page.login("rodnischev@safib.ru", "1")  # Замените на ваш пароль
 
-    group_name = "ТестГруппа"
-    with allure.step(f'Adding group: {group_name}'):
-        group_management_page.add_group(group_name)
+    # Переход к "Мой ассистент"
+        self.my_assistant_page.click_my_assistant()
+        self.my_assistant_page.click_my_assistant2()
 
-    # Ожидание появления всплывающего окна
-    assert WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div/div/div"))
-    ), "Всплывающее окно не появилось, тест не пройден."
+    # Нажимаем на кнопку "Добавить группу"
+        self.my_assistant_page.click_add_group()
 
-@allure.feature('Group Management')
-@allure.story('Delete Group')
-@allure.step('Login to the application')
-def test_delete_group(driver):
-    login_page = LoginPage(driver)
-    login_page.login('test@safib.ru', '1')
+    # Вводим название группы
+        group_name = "ТестГруппа"
+        self.my_assistant_page.enter_group_name(group_name)
 
-    # Переход к управлению группами
-    group_management_page = GroupManagementPage(driver)
-    group_management_page.navigate_to_organization("Тест Андрей")  # Замените на имя вашей организации
-    group_management_page.navigate_to_devices()
+    # Нажимаем на кнопку "Сохранить"
+        self.my_assistant_page.click_save()
 
-    group_name = "ТестГруппа"
-    with allure.step(f'Deleting group: {group_name}'):
-        group_management_page.delete_group(group_name)  # Метод для удаления группы
+    # Ждем, чтобы сообщение успело появиться
+        time.sleep(1)
 
-    # Ожидание, что группа была удалена
-    try:
-        # Проверка, что группа не присутствует на странице
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, f"//*[text()='{group_name}']"))
-        )
-        assert False, "Группа все еще существует, тест не пройден."
-    except:
-        # Если группа не найдена, тест считается пройденным
-        pass
+    # Проверяем, что появилось уведомление о создании группы
+        success_message = self.my_assistant_page.get_success_message()
+        assert "Группа устройств успешно создана" in success_message, "Сообщение об успешном создании группы не появилось."
 
-if __name__ == "__main__":
-    pytest.main()
+    # Ждем пару секунд
+        self.driver.implicitly_wait(2)
+
+    # Нажимаем на кнопку "Действия"
+        self.my_assistant_page.click_actions()
+
+    # Нажимаем на кнопку "Удалить"
+        self.my_assistant_page.click_delete()
+
+    # Подтверждаем удаление
+        self.my_assistant_page.confirm_delete()
+
+    # Ждем, чтобы изменения успели примениться
+        self.driver.implicitly_wait(2)
+
+

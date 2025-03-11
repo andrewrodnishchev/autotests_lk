@@ -1,8 +1,8 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from autotests.pages.device_management_page import DevicePage
-from autotests.pages.test_login_page import LoginPage
+from autotests.pages.organization_device_management_page import DevicePage
+from autotests.tests.test_login_page import LoginPage
 
 class TestDeviceManagement:
     @pytest.fixture
